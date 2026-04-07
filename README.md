@@ -36,7 +36,3 @@ un flujo de trabajo DevOps completo, incluyendo:
 | `feature/*` | Desarrollo de nuevas funcionalidades                |
 
 ---
-
-## Licencia
-
-MIT License — ver [LICENSE](LICENSE) para más detalles.
