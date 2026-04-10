@@ -57,14 +57,6 @@ terraform.tfvars
 .DS_Store
 Thumbs.db
 
-# ========================
-# Logs y archivos temporales
-# ========================
-*.log
-*.tmp
-*.cache
-logs/
-tmp/
 
 # ========================
 # Node.js (si aplica)
