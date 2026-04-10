@@ -1,0 +1,30 @@
+services:
+  web:
+    build: ./app
+    ports:
+      - "5000:5000"
+    networks: #Redes para comunicar el contenedor con otros servicios, como la base de datos.
+      - frontend
+      - backend
+    volumes: #Volumen para montar el código fuente de la aplicación dentro del contenedor (Hot-reload).
+      - ./app:/app 
+    environment:
+      - FLASK_ENV=development
+    depends_on:
+      - db
+
+  db:
+    image: redis:alpine
+    networks:
+      - backend
+    volumes: #Volumen para persistir los datos de Redis, asegurando que no se pierdan.
+      - redis_data:/data
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+volumes:
+  redis_data:
