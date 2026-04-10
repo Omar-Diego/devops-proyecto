@@ -13,7 +13,9 @@
 Este proyecto demuestra la implementación de prácticas DevOps en un entorno cloud de AWS. Proporciona scripts de automatización para:
 
 - **Aprovisionamiento de Instancias EC2**: Lanzamiento programático de instancias EC2 de AWS con límites de seguridad
+- **Infraestructura como Código (IaC)**: Plantillas CloudFormation para aprovisionamiento automatizado de recursos
 - **Reporte de Recursos**: Generación de reportes completos sobre instancias EC2 y buckets S3
+- **Contenerización**: Docker y Docker Compose para aplicaciones web con backend Redis
 - **Configuración de Entorno**: Instalación automatizada de dependencias de desarrollo
 - **Automatización de Tareas**: Programación de tareas cron para la gestión de logs
 
@@ -23,6 +25,7 @@ Este proyecto demuestra la implementación de prácticas DevOps en un entorno cl
 - Comprender la interacción con la API de AWS usando Python y Boto3
 - Practicar la automatización con scripts de shell
 - Establecer patrones de codificación segura (por ejemplo, límites de seguridad para la creación de recursos)
+- Implementar contenerización con Docker y Docker Compose
 
 ---
 
@@ -31,7 +34,10 @@ Este proyecto demuestra la implementación de prácticas DevOps en un entorno cl
 | Característica              | Descripción                                                                |
 | --------------------------- | -------------------------------------------------------------------------- |
 | **Aprovisionamiento EC2**   | Creación automatizada de instancias EC2 con límites de seguridad Free Tier |
+| **Plantilla CloudFormation** | Plantilla IaC para aprovisionar EC2, S3 y Roles de IAM en AWS             |
 | **Reporte de Recursos**     | Genera reportes detallados de recursos EC2 y S3 en AWS                     |
+| **Contenedor Docker**      | Imagen Docker multilStage con aplicación Flask y Redis                  |
+| **Docker Compose**        | Orquestación de servicios web y base de datos con redes y volúmenes      |
 | **Gestión de Dependencias** | Instalación automatizada de herramientas de entorno de desarrollo          |
 | **Automatización con Cron** | Tareas programadas para limpieza de logs                                   |
 | **Salida Dual**             | Los scripts muestran salida tanto en terminal como en archivos de log      |
@@ -47,7 +53,8 @@ Antes de usar este proyecto, asegúrate de contar con lo siguiente:
 - **Sistema Operativo**: Linux (se recomienda Ubuntu/Debian), macOS o Windows con WSL2
 - **Git**: Versión 2.x o superior
 - **Python**: Versión 3.8 o superior
-- **Docker**: Versión 20.x o superior (opcional, para contenerización)
+- **Docker**: Versión 20.x o superior (para contenerización)
+- **Docker Compose**: Versión 2.x o superior
 
 ### Requisitos de AWS
 
@@ -58,12 +65,15 @@ Antes de usar este proyecto, asegúrate de contar con lo siguiente:
   - `ec2:RunInstances`
   - `s3:ListBuckets`
   - `s3:ListObjects`
+  - `cloudformation:*` (si usas plantillas CloudFormation)
 
 ### Dependencias de Python
 
 - boto3
 - botocore
 - python-dateutil
+- flask
+- redis
 
 ---
 
@@ -204,6 +214,149 @@ chmod +x Equipo1-automatizar.sh
 
 ---
 
+## ☁️ Plantilla CloudFormation
+
+Esta plantilla aprovisiona recursos de infraestructura en AWS de manera declarativa.
+
+### Recursos Creados
+
+| Recurso                  | Descripción                                                              |
+| ------------------------- | -------------------------------------------------------------------------- |
+| **Rol de IAM**           | Rol con política AmazonS3ReadOnlyAccess para acceso a S3                 |
+| **Perfil de Instancia** | Perfil para asociar el Rol de IAM a la instancia EC2                       |
+| **Instancia EC2**        | Instancia EC2 con tipo t3.micro o t3.small                                |
+| **Bucket S3**            | Bucket S3 con nombre único basado en el ID de cuenta                      |
+
+### Uso de la Plantilla
+
+#### Desde AWS CLI
+
+```bash
+# Crear stack de CloudFormation
+aws cloudformation create-stack \
+  --stack-name mi-stack-devops \
+  --template-body file://CloudFormTemplate/Equipo\ 1\ -\ ADP-\ 6.\ Plantilla\ CloudFormation.yml \
+  --parameters ParameterKey=TipoDeInstancia,ParameterValue=t3.micro \
+  --region us-east-1
+```
+
+#### Desde Console AWS
+
+1. Ve a CloudFormation en AWS Console
+2. Crea un nuevo stack
+3. Sube el archivo `Plantilla CloudFormation.yml`
+4. Especifica los parámetros (TipoDeInstancia)
+5. Ejecuta el stack
+
+### Parámetros
+
+| Parámetro        | Tipo    | Default        | Descripción                              |
+| ---------------- | ------- | --------------- | ------------------------------------------ |
+| TipoDeInstancia  | String  | t3.micro       | Tipo de instancia EC2 (t3.micro/t3.small) |
+| AMIId            | String  | Latest AL2023   | ID de la AMI de Amazon Linux 2023         |
+
+### Outputs
+
+| Output              | Descripción                      |
+| -------------------- | -------------------------------- |
+| EC2IdOutput         | ID de la instancia EC2 creada   |
+| BucketNameOutput    | Nombre del bucket S3 creado      |
+
+---
+
+## 🐳 Docker: Imagen y Aplicación Web
+
+Esta sección contiene la configuración de contenedorización con Docker y Docker Compose.
+
+### Estructura
+
+```
+DockerImage&WebApp/Equipo 1 - ADP - 7. Docker/
+├── docker-compose.yml          # Orquestación de servicios
+├── app/
+│   ├── app.py                # Aplicación Flask
+│   ├── Dockerfile            # Imagen Docker multilStage
+│   └── requirements.txt     # Dependencias Python
+└── .dockerignore            # Archivos a excluir
+```
+
+### Construcción de la Imagen Docker
+
+```bash
+cd DockerImage&WebApp/Equipo\ 1\ -\ ADP\ -\ 7.\ Docker
+docker build -t mi-app-flask ./app
+```
+
+### Ejecución con Docker Compose
+
+```bash
+# Iniciar todos los servicios
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f
+
+# Detener servicios
+docker-compose down
+```
+
+### Servicios
+
+| Servicio | Imagen              | Puerto   | Descripción                          |
+| -------- | ------------------- | -------- | ------------------------------------- |
+| web      | Flask + Redis      | 5000     | Aplicación web con contador de visitas |
+| db       | Redis (alpine)     | 6379     | Base de datos para persistencia       |
+
+### Redes
+
+- **frontend**: Red para el servicio web
+- **backend**: Red para la base de datos Redis
+
+### Volúmenes
+
+- **redis_data**: Volumen para persistir datos de Redis
+
+### Características de la Imagen Docker
+
+- **Multi-stage Build**: Construcción en dos etapas para optimizar tamaño
+- **Entorno Virtual**: Python venv para aislamiento de dependencias
+- **Usuario no root**: Ejecución con usuario sin privilegios
+- ** slim**: Imagen base ligera python:3.9-slim
+
+### Aplicación Flask
+
+La aplicación web es una API REST simple que:
+
+- Serve en el puerto 5000
+- Conecta al servicio Redis (host: `db`, puerto: 6379)
+- Mantiene un contador de visitas en Redis
+- Retorna JSON con mensaje y número de visitas
+
+**Endpoints:**
+
+| Endpoint | Método | Descripción                    |
+| -------- |--------| --------------------------------|
+| `/`      | GET    | Retorna mensaje y contador     |
+
+**Ejemplo de uso:**
+
+```bash
+# Iniciar servicios
+docker-compose up -d
+
+# Probar endpoint
+curl http://localhost:5000/
+
+# Respuesta esperada
+{"message": "¡Hola!", "visitas": 1}
+
+# Visitas increase con cada request
+curl http://localhost:5000/
+{"message": "¡Hola!", "visitas": 2}
+```
+
+---
+
 ## ⚙️ Detalles de Configuración
 
 ### Configuración de Aprovisionamiento EC2
@@ -288,22 +441,34 @@ El script realiza:
 
 ```
 devops-proyecto/
-├── README.md                         # Este archivo
-├── requirements.txt                  # Dependencias de Python
-├── .gitignore                        # Reglas de exclusión de Git
+├── README.md                                    # Este archivo
+├── requirements.txt                            # Dependencias de Python
+├── .gitignore                                  # Reglas de exclusión de Git
 │
 ├── Python Scripts/
-│   ├── Equipo1-aprovisionar_ec2.py   # Aprovisionamiento EC2
-│   └── Equipo1-reporte_recursos.py   # Reporte de recursos
+│   ├── Equipo1-aprovisionar_ec2.py            # Aprovisionamiento EC2
+│   └── Equipo1-reporte_recursos.py           # Reporte de recursos
 │
 ├── Shell Scripts/
-│   ├── Equipo1-instalar_dependencias.sh  # Instalador de dependencias
-│   └── Equipo1-automatizar.sh            # Script de automatización
+│   ├── Equipo1-instalar_dependencias.sh      # Instalador de dependencias
+│   └── Equipo1-automatizar.sh                # Script de automatización
+│
+├── CloudFormTemplate/
+│   └── Equipo 1 - ADP- 6. Plantilla CloudFormation.yml  # Plantilla CloudFormation
+│
+├── DockerImage&WebApp/
+│   └── Equipo 1 - ADP - 7. Docker/
+│       ├── docker-compose.yml                 # Orquestación Docker Compose
+│       ├── .dockerignore                      # Archivos a excluir en Docker
+│       └── app/
+│           ├── app.py                        # Aplicación Flask
+│           ├── Dockerfile                     # Imagen Docker
+│           └── requirements.txt             # Dependencias Flask
 │
 └── Logs/ (generados)
-  ├── Equipo1-instalacion_entorno.log
-  ├── Equipo1-reporte_recursos.log
-  └── Equipo1-ejecucion_cron.log
+    ├── Equipo1-instalacion_entorno.log
+    ├── Equipo1-reporte_recursos.log
+    └── Equipo1-ejecucion_cron.log
 ```
 
 ---
