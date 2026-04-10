@@ -1,7 +1,23 @@
 import boto3
+import sys
 from datetime import datetime
 
-REGION = "us-east-1"  # Cambia según tu región configurada en AWS
+class Logger(object):
+    def __init__(self, filename="Equipo1-reporte_recursos.log"):
+        self.terminal = sys.stdout
+        self.log = open(filename, "a")
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)
+
+    def flush(self):
+        pass
+
+# Redirigir stdout para guardar el reporte al mismo tiempo que imprime
+sys.stdout = Logger()
+
+REGION = "us-east-1"
 
 def reporte_ec2(ec2_client):
     print("\n" + "="*50)
