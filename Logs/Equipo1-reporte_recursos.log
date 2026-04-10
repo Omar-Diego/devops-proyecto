@@ -1,0 +1,64 @@
+
+Reporte generado el: 2026-04-09 20:06:56
+
+==================================================
+REPORTE DE INSTANCIAS EC2
+==================================================
+
+Instancia #1
+  ID: i-0cd0a05cec50d13e7
+  Nombre: DEV-27-instancia
+  Tipo: t3.micro
+  Estado: running
+  IP Pública: 54.197.31.22
+  Región: us-east-1
+
+Instancia #2
+  ID: i-0c273ddb288458b1f
+  Nombre: DEV-27-instancia
+  Tipo: t3.micro
+  Estado: stopped
+  IP Pública: N/A
+  Región: us-east-1
+
+Instancia #3
+  ID: i-0c46b35018068fc88
+  Nombre: DEV-27-instancia
+  Tipo: t3.micro
+  Estado: stopped
+  IP Pública: N/A
+  Región: us-east-1
+
+Instancia #4
+  ID: i-01440813fa19a2d73
+  Nombre: DEV-27-instancia
+  Tipo: t3.micro
+  Estado: running
+  IP Pública: 54.234.237.27
+  Región: us-east-1
+
+Instancia #5
+  ID: i-09357d46020212b80
+  Nombre: DEV-27-instancia
+  Tipo: t3.micro
+  Estado: running
+  IP Pública: 3.87.144.57
+  Región: us-east-1
+
+Total de instancias: 5
+
+==================================================
+REPORTE DE BUCKETS S3
+==================================================
+
+  Bucket: mi-proyecto-devops
+  Creado: 2026-03-19 15:29:08
+  Región: us-east-1
+  Objetos: 3
+    - backup_2026-03-27_16-14.tar.gz
+    - index.html
+    - styles.css
+
+Total de buckets: 1
+
+Reporte finalizado.
