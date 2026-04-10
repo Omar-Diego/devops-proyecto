@@ -1,0 +1,66 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Plantilla'
+
+Parameters:
+  TipoDeInstancia:
+    Type: String
+    Default: t3.micro
+    AllowedValues:
+      - t3.micro
+      - t3.small
+    Description: "Selecciona el tipo de instancia EC2 a crear" 
+
+  AMIId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64'
+    Description: "ID de la imagen (Amazon Linux 2023)"  
+ 
+Resources:
+# 1. Creación del Rol de IAM (Ya que no estamos en el Lab)
+  RolEC2DevOps:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [ec2.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess # Permiso de ejemplo para sector financiero
+
+  # 2. Perfil de Instancia (Necesario para asociar el Rol a la EC2)
+  PerfilInstanciaDevOps:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Roles:
+        - !Ref RolEC2DevOps
+
+# 3. Instancia EC2
+  InstanciaEC2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref TipoDeInstancia
+      ImageId: !Ref AMIId
+      IamInstanceProfile: !Ref PerfilInstanciaDevOps #Asiociamos el Rol a la EC2
+      Tags: 
+        - Key: Name
+          Value: "Servidor-Produccion"
+
+  BucketS3:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Sub "bucket-prueba-de-devops-adp-${AWS::AccountId}"
+
+  
+
+Outputs:
+  EC2IdOutput:
+    Value: !Ref InstanciaEC2
+    Description: "Instancia EC2 creada con CLoudFormation"
+
+  BucketNameOutput:
+    Value: !Ref BucketS3
+    Description: "Bucket S3 creado con CloudFormation"  
