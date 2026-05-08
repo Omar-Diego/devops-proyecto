@@ -472,6 +472,38 @@ devops-proyecto/
 ```
 
 ---
+## Pipeline CI/CD (Punto 7)
+
+Este proyecto implementa un pipeline de integración y despliegue continuo usando:
+- **AWS CodePipeline** como orquestador
+- **AWS Lambda** para la lógica de despliegue (sin CodeBuild)
+- **AWS Systems Manager** para ejecutar comandos en EC2 sin SSH
+- **Amazon CloudWatch + SNS** para rollback automático ante fallos
+
+### Archivos del pipeline
+
+| Archivo | Descripción |
+|---------|-------------|
+| `Pipeline-CICD/deploy_handler.py` | Lambda de despliegue |
+| `Pipeline-CICD/rollback_handler.py` | Lambda de rollback automático |
+| `Pipeline-CICD/scripts/install.sh` | Instala dependencias en EC2 |
+| `Pipeline-CICD/scripts/start.sh` | Inicia la app con docker-compose |
+| `Pipeline-CICD/scripts/healthcheck.sh` | Verifica HTTP 200 |
+| `Pipeline-CICD/crear_pipeline.sh` | Crea el pipeline desde CLI |
+
+### Cómo activar un despliegue
+
+```bash
+git add .
+git commit -m 'feat: descripción del cambio'
+git push origin main
+```
+
+### Monitorear el estado
+
+```bash
+aws codepipeline get-pipeline-state --name stf-pipeline --region us-east-1
+```
 
 <p align="center">
   <strong>¡Feliz DevOps! 🚀</strong>
